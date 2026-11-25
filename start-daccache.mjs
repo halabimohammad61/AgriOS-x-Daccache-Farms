@@ -1,0 +1,4 @@
+import {spawn} from 'node:child_process';import {existsSync} from 'node:fs';
+const major=Number(process.versions.node.split('.')[0]);if(major<22){console.error('Install Node.js 22.13+ or Node 24 LTS first.');process.exit(1)}
+function npm(args){return new Promise((resolve,reject)=>{const child=spawn(process.platform==='win32'?'npm.cmd':'npm',args,{stdio:'inherit',shell:process.platform==='win32'});child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(Error('Step failed: npm '+args.join(' '))))})}
+try{if(!existsSync('node_modules'))await npm(['ci']);await npm(['run','setup']);if(!process.argv.includes('--external-db'))await npm(['run','db:up']);await npm(['run','db:migrate']);console.log('Open http://localhost:3000. Stop with Ctrl+C.');await npm(['run','dev'])}catch(e){console.error(e.message);console.error('See README.md for prerequisites and individual commands.');process.exitCode=1}
